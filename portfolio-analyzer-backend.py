@@ -51,25 +51,44 @@ def extract_portfolio_data(url):
 
 def analyze_with_gemini(company):
     try:
-        # Download image
+        # Initialize NLP pipeline for text analysis
+        nlp_classifier = pipeline("text-classification", model="distilbert-base-uncased-finetuned-sst-2-english")
+        
+        # Analyze company description with NLP
+        text_analysis = nlp_classifier(company['description'])
+        text_score = text_analysis[0]['score'] if text_analysis[0]['label'] == 'POSITIVE' else 0
+        
+        # Process image if available
+        image_score = 0
         if company['image_url']:
             img_response = requests.get(company['image_url'])
             img = Image.open(BytesIO(img_response.content))
             
-            # Analyze with Gemini
-            prompt = f"""
-            Analyze this company:
-            Name: {company['name']}
-            Description: {company['description']}
-            Image: [attached]
+            # Use NeuralVision for image analysis
+            vision_model = pipeline("image-classification", model="microsoft/resnet-50")
+            image_results = vision_model(img)
             
-            Is this an AI company? Return only 'yes' or 'no'.
-            """
-            
-            response = model.generate_content([prompt, img])
-            return response.text.strip().lower() == 'yes'
+            # Check for AI/tech related classifications
+            ai_keywords = ['computer', 'technology', 'digital', 'software', 'electronic']
+            image_score = sum(result['score'] for result in image_results 
+                            if any(keyword in result['label'].lower() for keyword in ai_keywords))
+
+        # Combine text and image analysis with Gemini
+        prompt = f"""
+        Analyze this company based on the following scores:
+        Name: {company['name']}
+        Text Analysis Score: {text_score}
+        Image Analysis Score: {image_score}
+        Description: {company['description']}
+        
+        Given these analysis scores and the description, is this an AI company? Return only 'yes' or 'no'.
+        """
+        
+        response = model.generate_content(prompt)
+        return response.text.strip().lower() == 'yes'
+        
     except Exception as e:
-        print(f"Error analyzing with Gemini: {str(e)}")
+        print(f"Error in advanced analysis: {str(e)}")
         return False
 
 @app.route('/analyze', methods=['POST'])

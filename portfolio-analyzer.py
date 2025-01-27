@@ -45,9 +45,41 @@ def analyze_portfolio_sites(websites_data):
     
     # Function to check IPO status (you would need to implement this with real market data)
     def check_ipo_status(company_name):
-        # Placeholder - replace with actual market data API call
-        # Example: Query Yahoo Finance, NASDAQ API, etc.
-        return False
+        try:
+            # Initialize Gemini API
+            # You'll need to set GOOGLE_API_KEY in your environment variables
+            import google.generativeai as genai
+            import os
+            import re
+            
+            api_key = os.getenv('GOOGLE_API_KEY')
+            if not api_key:
+                raise ValueError("Please set GOOGLE_API_KEY environment variable")
+                
+            genai.configure(api_key=api_key)
+            model = genai.GenerativeModel('gemini-pro')
+            
+            prompt = f"""
+            Is {company_name} a publicly traded company as of today? 
+            Please respond with ONLY 'Yes' or 'No'.
+            Base this on whether they have had an IPO and are currently trading on a major stock exchange.
+            """
+            
+            response = model.generate_content(prompt)
+            response_text = response.text.strip().lower()
+            
+            # Use regex to look for yes/no answer
+            if re.search(r'\byes\b', response_text):
+                return True
+            elif re.search(r'\bno\b', response_text):
+                return False
+            else:
+                # If response is unclear, assume not public
+                return False
+                
+        except Exception as e:
+            print(f"Error checking IPO status for {company_name}: {str(e)}")
+            return True
     
     # Check IPO status for each company
     df['is_public'] = df['company'].apply(check_ipo_status)

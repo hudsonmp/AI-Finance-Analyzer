@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-
 import { Loader2 } from 'lucide-react';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import { pipeline } from '@xenova/transformers';
+import { createWorker } from 'tesseract.js';
 
 interface Results {
   [company: string]: number;
