@@ -1,13 +1,18 @@
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+
 import { Loader2 } from 'lucide-react';
 
+interface Results {
+  [company: string]: number;
+}
+
 const PortfolioAnalyzer = () => {
-  const [urls, setUrls] = useState('');
-  const [results, setResults] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [urls, setUrls] = useState<string>('');
+  const [results, setResults] = useState<Results | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleAnalyze = async () => {
     setLoading(true);
