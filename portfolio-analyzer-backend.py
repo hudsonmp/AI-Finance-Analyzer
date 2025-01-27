@@ -10,7 +10,7 @@ from collections import Counter
 app = Flask(__name__)
 
 # Initialize Gemini API
-GOOGLE_API_KEY = 'AIzaSyDcVab_1FxaMmYZrvn_MwwUS5B0uxpXhW4'
+GOOGLE_API_KEY = ''
 genai.configure(api_key=GOOGLE_API_KEY)
 model = genai.GenerativeModel('gemini-pro-vision')
 
